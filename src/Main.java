@@ -21,7 +21,9 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         File file = new File(args.length > 0 ? args[0] : "");
+
         Analyzer analyzer = new Analyzer("--RK");
+
         List<PatternInfo> patterns = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(args.length > 1 ? args[1] : "")) {
             String text = new String(fis.readAllBytes());
@@ -30,13 +32,15 @@ public class Main {
                 patterns.add(new PatternInfo(Integer.parseInt(matcher.group(1)), matcher.group(2), matcher.group(3)));
             }
         } catch (IOException ignored) {}
-        Sort sort = new MergeSort();
+
         PatternInfo[] pairs = new PatternInfo[patterns.size()];
         for (int i = 0; i < pairs.length; i++) {
             pairs[i] = patterns.get(i);
         }
+        Sort sort = new MergeSort();
         sort.sort(pairs);
         List<PatternInfo> patternsFinal = List.of(pairs);
+
         Queue<File> files = new LinkedList<>();
         files.offer(file);
 
