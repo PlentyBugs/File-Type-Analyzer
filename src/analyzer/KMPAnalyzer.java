@@ -2,42 +2,36 @@ package analyzer;
 
 import auxiliary.Callback;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class KMPAnalyzer implements AnalyzerAlgorithm {
 
     @Override
     public Callback analyze(String pattern, String text, String patternName) {
         if ("".equals(pattern) || text.length() < pattern.length()) return new Callback("Unknown file type", false);
 
-        char[] s = pattern.toCharArray();
-        char[] t = text.toCharArray();
-        int[] p = prefixFunc(s);
+        char[] patternCA = pattern.toCharArray();
+        char[] textCA = text.toCharArray();
+        int[] patternPrefix = prefixFunc(patternCA);
 
-        List<Integer> occurrences = new ArrayList<>();
-
-        int i;
-        for (i = 0; i < t.length - s.length + 1;) {
-            for (int j = 0; j < s.length; j++) {
-                if (s[j] != t[i + j]) {
-                    i += j > 0 ? j - p[j - 1] : 1;
+        for (int i = 0; i < textCA.length - patternCA.length + 1;) {
+            for (int j = 0; j < patternCA.length; j++) {
+                if (patternCA[j] != textCA[i + j]) {
+                    i += j > 0 ? j - patternPrefix[j - 1] : 1;
                     break;
                 }
-                if (j == s.length - 1) {
-                    occurrences.add(i++);
+                if (j == patternCA.length - 1) {
+                    return new Callback(patternName, true);
                 }
             }
         }
 
-        return occurrences.size() == 0 ? new Callback("Unknown file type", false): new Callback(patternName, true);
+        return new Callback("Unknown file type", false);
     }
 
     private static int[] prefixFunc(char[] s) {
-        int[] p = new int[s.length];
+        int[] patternPrefix = new int[s.length];
         for (int i = 1; i < s.length; i++) {
-            p[i] = s[p[i - 1]] == s[i] ? p[i - 1] + 1: s[0] == s[i] ? 1: 0;
+            patternPrefix[i] = s[patternPrefix[i - 1]] == s[i] ? patternPrefix[i - 1] + 1: s[0] == s[i] ? 1: 0;
         }
-        return p;
+        return patternPrefix;
     }
 }

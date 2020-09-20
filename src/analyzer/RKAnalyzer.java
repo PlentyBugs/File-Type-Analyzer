@@ -2,25 +2,22 @@ package analyzer;
 
 import auxiliary.Callback;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class RKAnalyzer implements AnalyzerAlgorithm {
 
     @Override
     public Callback analyze(String pattern, String text, String patternName) {
         if ("".equals(pattern) || text.length() < pattern.length()) return new Callback("Unknown file type", false);
 
-        List<Integer> occurrences = analyze(text, pattern);
+        boolean match = analyze(text, pattern);
 
-        return occurrences.size() == 0 ? new Callback("Unknown file type", false): new Callback(patternName, true);
+        return match ? new Callback(patternName, true): new Callback("Unknown file type", false);
     }
 
     private static long charToLong(char ch) {
         return ch + 1;
     }
 
-    private static List<Integer> analyze(String text, String pattern) {
+    private static boolean analyze(String text, String pattern) {
         int a = 49;
         long m = 1_000_000_000 + 9;
 
@@ -40,8 +37,6 @@ public class RKAnalyzer implements AnalyzerAlgorithm {
             }
         }
 
-        List<Integer> occurrences = new ArrayList<>();
-
         for (int i = text.length(); i >= pattern.length(); i--) {
             if (patternHash == currSubstrHash) {
                 boolean patternIsFound = true;
@@ -54,7 +49,7 @@ public class RKAnalyzer implements AnalyzerAlgorithm {
                 }
 
                 if (patternIsFound) {
-                    occurrences.add(i - pattern.length());
+                    return true;
                 }
             }
 
@@ -63,6 +58,7 @@ public class RKAnalyzer implements AnalyzerAlgorithm {
                 currSubstrHash = (currSubstrHash + charToLong(text.charAt(i - pattern.length() - 1))) % m;
             }
         }
-        return occurrences;
+
+        return false;
     }
 }

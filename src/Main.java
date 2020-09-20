@@ -1,5 +1,4 @@
 import analyzer.Analyzer;
-import auxiliary.Callback;
 import auxiliary.PatternInfo;
 import sort.MergeSort;
 import sort.Sort;
@@ -20,8 +19,6 @@ import java.util.regex.Pattern;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        File file = new File(args.length > 0 ? args[0] : "");
-
         Analyzer analyzer = new Analyzer("--RK");
 
         List<PatternInfo> patterns = new ArrayList<>();
@@ -41,38 +38,25 @@ public class Main {
         sort.sort(pairs);
         List<PatternInfo> patternsFinal = List.of(pairs);
 
+        File sourceFolder = new File(args.length > 0 ? args[0] : "");
         Queue<File> files = new LinkedList<>();
-        files.offer(file);
+        files.offer(sourceFolder);
 
         ExecutorService exec = Executors.newCachedThreadPool();
 
         while (!files.isEmpty()) {
-            File f = files.poll();
-            File[] fs = f.listFiles();
-            if (fs == null) continue;
-            for (File f3 : fs) {
-                if (f3.isDirectory()) {
-                    files.offer(f3);
+            File fileFromQueue = files.poll();
+            File[] listFiles = fileFromQueue.listFiles();
+            if (listFiles == null) continue;
+            for (File file : listFiles) {
+                if (file.isDirectory()) {
+                    files.offer(file);
                 } else {
-                    exec.submit(() -> analyzeFile(f3, patternsFinal, analyzer));
+                    exec.submit(() -> analyzer.analyzeFile(file, patternsFinal));
                 }
             }
         }
-        exec.awaitTermination(10, TimeUnit.SECONDS);
-    }
 
-    private static void analyzeFile(File file, List<PatternInfo> patterns, Analyzer analyzer) {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            String text = new String(fis.readAllBytes());
-            String message = "Unknown file type";
-            for (PatternInfo e : patterns) {
-                Callback callback = analyzer.analyze(e.getPattern(), e.getName(), text);
-                if (callback.isSuccess()) {
-                    message = callback.getMessage();
-                    break;
-                }
-            }
-            System.out.println(file.getName() + ": " + message);
-        } catch (IOException ignored) {}
+        exec.awaitTermination(10, TimeUnit.SECONDS);
     }
 }
