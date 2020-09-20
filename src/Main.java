@@ -57,6 +57,7 @@ public class Main {
             }
         }
 
+        exec.shutdown();
         exec.awaitTermination(10, TimeUnit.SECONDS);
     }
 }
